@@ -426,3 +426,9 @@ FodyWeavers.xsd
 
 # Official VS Code C# Dev Kit Extension exclusion
 #*.lscache
+
+# Agent desk demo data (SQLite store + run log)
+App_Data/
+*.db
+*.db-shm
+*.db-wal

@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- MEAI001: function-approval types in Microsoft.Extensions.AI are flagged as experimental. -->
+    <NoWarn>$(NoWarn);MEAI001</NoWarn>
+    <Authors>Mateo Vergara</Authors>
+    <RepositoryUrl>https://github.com/MateoVH/AIAgentDemo</RepositoryUrl>
+  </PropertyGroup>
+</Project>
