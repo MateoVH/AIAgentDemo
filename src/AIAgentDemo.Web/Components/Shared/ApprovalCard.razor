@@ -1,0 +1,104 @@
+@inject IStringLocalizer<SharedResource> L
+
+<article class="approval @StateCss">
+    @if (Row.Decision is null)
+    {
+        <p class="label approval-eyebrow">@L["Approval_Eyebrow"]</p>
+    }
+
+    <h3 class="approval-action">@ActionText.Describe(L, Row.Request.ToolName, Row.Request.Arguments)</h3>
+
+    <dl class="approval-facts">
+        @if (ActionText.Reason(Row.Request.Arguments) is { Length: > 0 } reason)
+        {
+            <dt>@L["Approval_Reason"]</dt>
+            <dd>@reason</dd>
+        }
+        @if (Row.Request.Rationale is { Length: > 0 } rationale)
+        {
+            <dt>@L["Approval_Rationale"]</dt>
+            <dd>@rationale</dd>
+        }
+    </dl>
+
+    @if (Row.Decision is { } decision)
+    {
+        <p class="stamp" role="status">
+            <span class="stamp-mark" aria-hidden="true">@(decision.Approved ? "✓" : "✕")</span>
+            <span>@(decision.Approved ? L["Approval_Approved", Reviewer(decision)] : L["Approval_Rejected", Reviewer(decision)])</span>
+        </p>
+        <p class="hint">
+            @if (Row.WaitedMs is { } waited)
+            {
+                @L["Approval_Waited", Format.Duration(waited)]
+            }
+            @if (decision.Note is { Length: > 0 } note)
+            {
+                <span> · “@note”</span>
+            }
+        </p>
+    }
+    else if (Live)
+    {
+        <label class="field">
+            <span class="field-label">@L["Approval_Note"]</span>
+            <textarea rows="2" @bind="note" disabled="@sent"></textarea>
+        </label>
+        <div class="approval-buttons">
+            <button type="button" class="btn btn-approve" disabled="@sent" @ref="approveButton" @onclick="() => DecideAsync(true)">@L["Approval_Approve"]</button>
+            <button type="button" class="btn btn-reject" disabled="@sent" @onclick="() => DecideAsync(false)">@L["Approval_Reject"]</button>
+        </div>
+    }
+    else
+    {
+        <p class="hint">@L["Approval_Pending"]</p>
+    }
+</article>
+
+@code {
+    [Parameter, EditorRequired] public ApprovalRow Row { get; set; } = default!;
+    [Parameter] public bool Live { get; set; }
+    [Parameter] public Func<string, bool, string?, Task>? OnDecision { get; set; }
+
+    private ElementReference approveButton;
+    private string? note;
+    private bool sent;
+    private bool focused;
+
+    private string StateCss => Row.Decision switch
+    {
+        null => "is-pending",
+        { Approved: true } => "is-approved",
+        _ => "is-rejected",
+    };
+
+    private string Reviewer(ApprovalDecision decision) =>
+        decision.Reviewer == PendingApprovals.OperatorReviewer ? L["Approval_You"] : decision.Reviewer;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Bring the decision to the operator: focus (and scroll to) the approve button once.
+        if (!focused && Live && Row.Decision is null)
+        {
+            focused = true;
+            try
+            {
+                await approveButton.FocusAsync();
+            }
+            catch (JSException)
+            {
+            }
+        }
+    }
+
+    private async Task DecideAsync(bool approved)
+    {
+        if (sent || OnDecision is null)
+        {
+            return;
+        }
+
+        sent = true;
+        await OnDecision(Row.Request.RequestId, approved, note);
+    }
+}

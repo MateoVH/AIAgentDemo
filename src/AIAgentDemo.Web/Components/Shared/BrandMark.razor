@@ -1,0 +1,13 @@
+@* A miniature of the run graph: five lifelines, a cascade of hand-offs and the branch to the human. *@
+<svg class="brandmark" viewBox="0 0 30 24" width="30" height="24" aria-hidden="true" focusable="false">
+    @for (var i = 0; i < 5; i++)
+    {
+        <line x1="@(3 + i * 6)" y1="2" x2="@(3 + i * 6)" y2="22" class="bm-life" />
+    }
+    <line x1="15" y1="14" x2="27" y2="14" class="bm-wire" />
+    <circle cx="3" cy="5" r="2.6" class="bm-node lane-0" />
+    <circle cx="9" cy="9.5" r="2.6" class="bm-node lane-1" />
+    <circle cx="15" cy="14" r="2.6" class="bm-node lane-2" />
+    <circle cx="27" cy="14" r="2.6" class="bm-node lane-4" />
+    <circle cx="21" cy="19" r="2.6" class="bm-node lane-3" />
+</svg>

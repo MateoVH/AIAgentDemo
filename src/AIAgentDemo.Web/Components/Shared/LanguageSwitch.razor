@@ -1,0 +1,29 @@
+@inject NavigationManager Navigation
+@inject IStringLocalizer<SharedResource> L
+
+<div class="lang-switch" role="group" aria-label="@L["Lang_Label"]">
+    @foreach (var culture in Cultures)
+    {
+        <button type="button"
+                class="@(culture == Format.Language ? "is-current" : null)"
+                aria-pressed="@(culture == Format.Language ? "true" : "false")"
+                lang="@culture"
+                @onclick="() => Switch(culture)">@culture.ToUpperInvariant()</button>
+    }
+</div>
+
+@code {
+    private static readonly string[] Cultures = ["en", "es"];
+
+    private void Switch(string culture)
+    {
+        if (culture == Format.Language)
+        {
+            return;
+        }
+
+        // The culture cookie is set server-side, so this needs a full page load.
+        var returnUrl = "/" + Navigation.ToBaseRelativePath(Navigation.Uri);
+        Navigation.NavigateTo($"culture/{culture}?returnUrl={Uri.EscapeDataString(returnUrl)}", forceLoad: true);
+    }
+}

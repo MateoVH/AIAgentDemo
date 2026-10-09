@@ -1,0 +1,224 @@
+@inject IStringLocalizer<SharedResource> L
+@inject PricingCatalog Pricing
+@inject IJSRuntime JS
+
+<section class="run">
+    <div class="run-main">
+        @if (Message is null)
+        {
+            <header class="case case-empty">
+                <p class="label">@L["Case_Eyebrow"]</p>
+                <h1 class="case-title">@L["Empty_Title"]</h1>
+                <p class="case-sub">@L["Empty_Body"]</p>
+            </header>
+        }
+        else
+        {
+            <header class="case">
+                <h1 class="sr-only">@L["Case_Eyebrow"] @RunId</h1>
+                <div class="case-meta">
+                    <span class="label">@L["Case_Eyebrow"]</span>
+                    @if (RunId is not null)
+                    {
+                        <span class="mono">@RunId</span>
+                    }
+                    <span class="case-customer">@CustomerName</span>
+                    @if (CustomerEmail != CustomerName)
+                    {
+                        <span class="muted">@CustomerEmail</span>
+                    }
+                    @if (StatusText is { } status)
+                    {
+                        <span class="status status-@StatusCss">@status</span>
+                    }
+                    @if (Live && Running)
+                    {
+                        <button type="button" class="btn-link" @onclick="OnStop">@L["Stop"]</button>
+                    }
+                </div>
+                <blockquote class="case-message" lang="@insights.Triage?.Language">@Message</blockquote>
+            </header>
+        }
+
+        <RunGraphView Rows="rows" Live="Live" OnDecision="OnDecision" />
+
+        @if (insights.Reply is { Length: > 0 } reply)
+        {
+            <section class="reply" aria-labelledby="reply-title">
+                <header class="reply-head">
+                    <h2 id="reply-title" class="label">@L["Reply_Title"]</h2>
+                    <span class="reply-to">@L["Reply_To"] <span class="mono">@CustomerEmail</span></span>
+                    <button type="button" class="btn-link" @onclick="() => CopyAsync(reply)">@(copied ? L["Copied"] : L["Copy"])</button>
+                </header>
+                <p class="reply-body" lang="@insights.Triage?.Language">@reply</p>
+                <p class="hint reply-foot">@L["Reply_Review"]</p>
+            </section>
+        }
+    </div>
+
+    <aside class="run-aside">
+        @if (insights.Triage is { } triage)
+        {
+            <section class="panel" aria-labelledby="triage-title">
+                <h2 id="triage-title" class="label">@L["Triage_Title"]</h2>
+                <ul class="chips">
+                    <li class="chip chip-strong">@L[$"Intent_{triage.Intent}"]</li>
+                    <li class="chip">@L[$"Language_{triage.Language}"]</li>
+                    <li class="chip urgency-@triage.Urgency.ToString().ToLowerInvariant()">@L[$"Urgency_{triage.Urgency}"]</li>
+                    <li class="chip">@L[$"Sentiment_{triage.Sentiment}"]</li>
+                    @if (triage.OrderId is int orderId)
+                    {
+                        <li class="chip mono">@L["Order_Ref", orderId]</li>
+                    }
+                </ul>
+                <p class="panel-text">@triage.Summary</p>
+            </section>
+        }
+
+        <section class="panel" aria-labelledby="spend-title">
+            <h2 id="spend-title" class="label">@L["Spend_Title"]</h2>
+            @if (insights.Spend.Count == 0)
+            {
+                <p class="hint">@L["Spend_Empty"]</p>
+            }
+            else
+            {
+                <ul class="ledger">
+                    @foreach (var row in insights.Spend)
+                    {
+                        <li class="ledger-row lane-@((int)row.Agent)">
+                            <span class="ledger-name"><span class="dot" aria-hidden="true"></span>@L[$"Lane_{row.Agent}"]</span>
+                            <span class="ledger-cost">@Money.Cost(row.CostUsd)</span>
+                            <span class="ledger-meta">@L["Spend_Line", row.Calls, Format.Number(row.InputTokens), Format.Number(row.OutputTokens)]</span>
+                        </li>
+                    }
+                    <li class="ledger-row ledger-total">
+                        <span class="ledger-name">@L["Spend_Total"]</span>
+                        <span class="ledger-cost">@Money.Cost(insights.CostUsd)</span>
+                        <span class="ledger-meta">@L["Spend_Line", insights.Calls, Format.Number(insights.InputTokens), Format.Number(insights.OutputTokens)]</span>
+                    </li>
+                </ul>
+            }
+
+            @if (insights.BudgetUsd > 0)
+            {
+                <div class="meter" role="meter" aria-label="@L["Spend_Budget", Money.Cost(insights.CostUsd), Money.Budget(insights.BudgetUsd)]"
+                     aria-valuemin="0" aria-valuemax="@Invariant(insights.BudgetUsd)" aria-valuenow="@Invariant(insights.CostUsd)">
+                    <span class="meter-fill @(insights.CostUsd > insights.BudgetUsd || insights.BudgetMessage is not null ? "is-over" : null)"
+                          style="width: @BudgetPercent%"></span>
+                </div>
+                <p class="hint">@L["Spend_Budget", Money.Cost(insights.CostUsd), Money.Budget(insights.BudgetUsd)]</p>
+            }
+
+            @foreach (var model in insights.Models)
+            {
+                <p class="hint mono">
+                    @if (Pricing.Find(model) is { } price)
+                    {
+                        @L["Spend_Pricing", model, Money.Usd(price.InputPerMillion), Money.Usd(price.OutputPerMillion)]
+                    }
+                    else
+                    {
+                        @L["Spend_Unpriced", model]
+                    }
+                </p>
+            }
+
+            @if (insights.Simulated)
+            {
+                <p class="hint">@L["Spend_Simulated"]</p>
+            }
+        </section>
+
+        @if (insights.Actions.Count > 0 || insights.FinalStatus is not null)
+        {
+            <section class="panel" aria-labelledby="actions-title">
+                <h2 id="actions-title" class="label">@L["Actions_Title"]</h2>
+                @if (insights.Actions.Count == 0)
+                {
+                    <p class="hint">@L["Actions_Empty"]</p>
+                }
+                else
+                {
+                    <ul class="actions-list">
+                        @foreach (var action in insights.Actions)
+                        {
+                            <li class="action action-@action.Status.ToString().ToLowerInvariant()">
+                                <span class="action-status">@L[$"ActionStatus_{action.Status}"]</span>
+                                <span class="action-text">@ActionText.Describe(L, action.Tool, action.Arguments)</span>
+                                @if (action.Reference is not null)
+                                {
+                                    <span class="mono action-ref">@action.Reference</span>
+                                }
+                                @if (action.Status == ActionStatus.Failed && action.Message is not null)
+                                {
+                                    <span class="hint">@action.Message</span>
+                                }
+                                @if (action.Note is not null)
+                                {
+                                    <span class="hint">“@action.Note”</span>
+                                }
+                            </li>
+                        }
+                    </ul>
+                }
+            </section>
+        }
+    </aside>
+</section>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<RunEvent> Events { get; set; } = [];
+    [Parameter] public string? CustomerName { get; set; }
+    [Parameter] public string? CustomerEmail { get; set; }
+    [Parameter] public string? Message { get; set; }
+    [Parameter] public bool Live { get; set; }
+    [Parameter] public bool Running { get; set; }
+    [Parameter] public Func<string, bool, string?, Task>? OnDecision { get; set; }
+    [Parameter] public EventCallback OnStop { get; set; }
+
+    private RunInsights insights = RunInsights.From([]);
+    private IReadOnlyList<GraphRow> rows = [];
+    private bool copied;
+
+    private string? RunId => Events.Count > 0 ? Events[0].RunId : null;
+
+    private string? StatusText => insights.FinalStatus switch
+    {
+        { } status => L[$"Status_{status}"].Value,
+        null when Events.Count == 0 => null,
+        null when insights.AwaitingApproval => L["Status_Waiting"].Value,
+        _ => L["Status_Running"].Value,
+    };
+
+    private string StatusCss => insights.FinalStatus?.ToString().ToLowerInvariant()
+        ?? (insights.AwaitingApproval ? "waiting" : "running");
+
+    private string BudgetPercent =>
+        Math.Min(100m, insights.BudgetUsd == 0 ? 0 : insights.CostUsd / insights.BudgetUsd * 100m).ToString("0.##", CultureInfo.InvariantCulture);
+
+    protected override void OnParametersSet()
+    {
+        insights = RunInsights.From(Events);
+        rows = RunGraph.Build(Events);
+        if (Events.Count == 0)
+        {
+            copied = false;
+        }
+    }
+
+    private static string Invariant(decimal value) => value.ToString(CultureInfo.InvariantCulture);
+
+    private async Task CopyAsync(string text)
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("agentDesk.copy", text);
+            copied = true;
+        }
+        catch (JSException)
+        {
+            copied = false;
+        }
+    }
+}

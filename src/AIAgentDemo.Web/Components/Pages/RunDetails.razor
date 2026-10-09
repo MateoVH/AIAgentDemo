@@ -1,0 +1,35 @@
+@page "/runs/{RunId}"
+@inject IRunStore Runs
+@inject IStringLocalizer<SharedResource> L
+
+<PageTitle>@L["Details_Title", RunId]</PageTitle>
+
+<div class="details">
+    <a class="back-link" href="runs">← @L["History_Back"]</a>
+
+    @if (loaded && record is null)
+    {
+        <p class="empty">@L["History_NotFound"]</p>
+    }
+    else if (record is not null)
+    {
+        <RunView Events="record.Events"
+                 CustomerName="@record.Summary.CustomerEmail"
+                 CustomerEmail="@record.Summary.CustomerEmail"
+                 Message="@record.Summary.Message"
+                 Live="false" />
+    }
+</div>
+
+@code {
+    [Parameter] public string RunId { get; set; } = "";
+
+    private RunRecord? record;
+    private bool loaded;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        record = await Runs.GetAsync(RunId);
+        loaded = true;
+    }
+}
