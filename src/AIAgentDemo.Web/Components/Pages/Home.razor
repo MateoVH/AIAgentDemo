@@ -1,0 +1,190 @@
+@page "/"
+@implements IDisposable
+@inject SupportSupervisor Supervisor
+@inject PendingApprovals Approvals
+@inject StoreRepository Store
+@inject StoreDatabase Database
+@inject IOptions<BudgetOptions> BudgetOptions
+@inject IStringLocalizer<SharedResource> L
+@inject ILogger<Home> Logger
+
+<PageTitle>@L["Title_Console"]</PageTitle>
+
+<div class="console">
+    <aside class="inbox" aria-labelledby="inbox-title">
+        <div class="inbox-intro">
+            <h2 id="inbox-title" class="label">@L["Inbox_Title"]</h2>
+            <p class="hint">@L["Inbox_Hint"]</p>
+        </div>
+
+        <ul class="tickets">
+            @foreach (var ticket in SampleTickets.All)
+            {
+                <li>
+                    <button type="button"
+                            class="ticket @(selectedTicket == ticket.Id ? "is-selected" : null)"
+                            disabled="@running"
+                            aria-label="@L["Sample_Aria", ticket.CustomerName]"
+                            @onclick="() => RunTicketAsync(ticket)">
+                        <span class="ticket-head">
+                            <span class="ticket-name">@ticket.CustomerName</span>
+                            <span class="ticket-lang">@ticket.Language.ToUpperInvariant()</span>
+                        </span>
+                        <span class="ticket-scenario">@L[$"Scenario_{ticket.Scenario}"]</span>
+                        <span class="ticket-text" lang="@ticket.Language">@ticket.Message</span>
+                    </button>
+                </li>
+            }
+        </ul>
+
+        <form class="compose" @onsubmit="RunCustomAsync">
+            <h2 class="label">@L["Compose_Title"]</h2>
+            <label class="field">
+                <span class="field-label">@L["Compose_Customer"]</span>
+                <select @bind="customerEmail" disabled="@running">
+                    @foreach (var customer in customers)
+                    {
+                        <option value="@customer.Email">@customer.Name · @customer.Language.ToUpperInvariant()</option>
+                    }
+                </select>
+            </label>
+            <label class="field">
+                <span class="field-label">@L["Compose_Message"]</span>
+                <textarea rows="4" @bind="customMessage" @bind:event="oninput" placeholder="@L["Compose_Placeholder"]" disabled="@running"></textarea>
+            </label>
+            <button type="submit" class="btn btn-primary" disabled="@(running || string.IsNullOrWhiteSpace(customMessage))">@L["Compose_Run"]</button>
+        </form>
+
+        <div class="inbox-settings">
+            <label class="field">
+                <span class="field-label">@L["Compose_Budget"]</span>
+                <input type="number" min="0.0001" step="0.001" @bind="budgetUsd" disabled="@running" />
+            </label>
+            <p class="hint">@L["Compose_BudgetHint"]</p>
+            <button type="button" class="btn-link" disabled="@running" @onclick="ResetDataAsync">@L["Reset_Button"]</button>
+            @if (resetDone)
+            {
+                <p class="hint" role="status">@L["Reset_Done"]</p>
+            }
+        </div>
+    </aside>
+
+    <RunView Events="events"
+             CustomerName="@caseCustomerName"
+             CustomerEmail="@caseEmail"
+             Message="@caseMessage"
+             Live="true"
+             Running="running"
+             OnDecision="DecideAsync"
+             OnStop="Stop" />
+</div>
+
+@code {
+    private IReadOnlyList<RunEvent> events = [];
+    private IReadOnlyList<CustomerListItem> customers = [];
+    private CancellationTokenSource? runCancellation;
+    private bool running;
+    private bool resetDone;
+    private bool disposed;
+    private string? selectedTicket;
+    private string? caseCustomerName;
+    private string? caseEmail;
+    private string? caseMessage;
+    private string customerEmail = "";
+    private string customMessage = "";
+    private decimal budgetUsd;
+
+    protected override async Task OnInitializedAsync()
+    {
+        budgetUsd = BudgetOptions.Value.MaxCostPerRunUsd;
+        customers = await Store.ListCustomersAsync();
+        customerEmail = customers.FirstOrDefault()?.Email ?? "";
+    }
+
+    private Task RunTicketAsync(SampleTicket ticket)
+    {
+        selectedTicket = ticket.Id;
+        return StartAsync(ticket.CustomerName, ticket.CustomerEmail, ticket.Message);
+    }
+
+    private Task RunCustomAsync()
+    {
+        selectedTicket = null;
+        var name = customers.FirstOrDefault(c => c.Email == customerEmail)?.Name ?? customerEmail;
+        return StartAsync(name, customerEmail, customMessage.Trim());
+    }
+
+    private async Task StartAsync(string customerName, string email, string message)
+    {
+        if (running || string.IsNullOrWhiteSpace(message))
+        {
+            return;
+        }
+
+        running = true;
+        resetDone = false;
+        events = [];
+        (caseCustomerName, caseEmail, caseMessage) = (customerName, email, message);
+
+        runCancellation?.Dispose();
+        runCancellation = new CancellationTokenSource();
+        var token = runCancellation.Token;
+        var request = new SupportRequest
+        {
+            CustomerEmail = email,
+            Message = message,
+            OperatorLanguage = Format.Language,
+            BudgetUsd = budgetUsd > 0 ? budgetUsd : null,
+        };
+
+        try
+        {
+            // Off the circuit's sync context: the UI stays responsive (e.g. to approval clicks) while agents work.
+            await Task.Run(() => Supervisor.RunAsync(request, OnRunEvent, token), CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Support run crashed");
+        }
+        finally
+        {
+            running = false;
+        }
+    }
+
+    // Called from the run's thread for every step; marshal onto the renderer.
+    private void OnRunEvent(RunEvent runEvent)
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        _ = InvokeAsync(() =>
+        {
+            events = [.. events, runEvent];
+            StateHasChanged();
+        });
+    }
+
+    private Task DecideAsync(string requestId, bool approved, string? note)
+    {
+        Approvals.Resolve(requestId, approved, note);
+        return Task.CompletedTask;
+    }
+
+    private void Stop() => runCancellation?.Cancel();
+
+    private async Task ResetDataAsync()
+    {
+        await Database.ResetAsync();
+        resetDone = true;
+    }
+
+    public void Dispose()
+    {
+        disposed = true;
+        runCancellation?.Cancel();
+        runCancellation?.Dispose();
+    }
+}

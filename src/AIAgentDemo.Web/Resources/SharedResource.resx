@@ -1,0 +1,441 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Brand_Store" xml:space="preserve">
+    <value>Nova Market</value>
+  </data>
+  <data name="Brand_Product" xml:space="preserve">
+    <value>Agent desk</value>
+  </data>
+  <data name="Nav_Console" xml:space="preserve">
+    <value>Console</value>
+  </data>
+  <data name="Nav_History" xml:space="preserve">
+    <value>Run history</value>
+  </data>
+  <data name="Nav_Main" xml:space="preserve">
+    <value>Main</value>
+  </data>
+  <data name="Provider_Demo" xml:space="preserve">
+    <value>Demo mode · simulated model</value>
+  </data>
+  <data name="Provider_Live" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="Lang_Label" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Source" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="Title_Console" xml:space="preserve">
+    <value>Agent desk · Nova Market</value>
+  </data>
+  <data name="Title_History" xml:space="preserve">
+    <value>Run history · Agent desk</value>
+  </data>
+  <data name="Inbox_Title" xml:space="preserve">
+    <value>Inbox</value>
+  </data>
+  <data name="Inbox_Hint" xml:space="preserve">
+    <value>Each message takes a different path through the agents.</value>
+  </data>
+  <data name="Scenario_refund" xml:space="preserve">
+    <value>Damaged item</value>
+  </data>
+  <data name="Scenario_coupon" xml:space="preserve">
+    <value>Late delivery</value>
+  </data>
+  <data name="Scenario_cancel" xml:space="preserve">
+    <value>Cancellation</value>
+  </data>
+  <data name="Scenario_info" xml:space="preserve">
+    <value>Product question</value>
+  </data>
+  <data name="Scenario_partial-refund" xml:space="preserve">
+    <value>Missing item</value>
+  </data>
+  <data name="Scenario_policy" xml:space="preserve">
+    <value>Outside policy</value>
+  </data>
+  <data name="Sample_Aria" xml:space="preserve">
+    <value>Run the agents on the message from {0}</value>
+  </data>
+  <data name="Compose_Title" xml:space="preserve">
+    <value>Write your own</value>
+  </data>
+  <data name="Compose_Customer" xml:space="preserve">
+    <value>Customer</value>
+  </data>
+  <data name="Compose_Message" xml:space="preserve">
+    <value>Message</value>
+  </data>
+  <data name="Compose_Placeholder" xml:space="preserve">
+    <value>Write as the customer, in Spanish or English.</value>
+  </data>
+  <data name="Compose_Budget" xml:space="preserve">
+    <value>Budget for this run (USD)</value>
+  </data>
+  <data name="Compose_BudgetHint" xml:space="preserve">
+    <value>Set it to 0.002 to watch the budget guard stop a run.</value>
+  </data>
+  <data name="Compose_Run" xml:space="preserve">
+    <value>Run the agents</value>
+  </data>
+  <data name="Reset_Button" xml:space="preserve">
+    <value>Reset demo data</value>
+  </data>
+  <data name="Reset_Done" xml:space="preserve">
+    <value>Demo data restored: orders, refunds and coupons are back to the seed.</value>
+  </data>
+  <data name="Case_Eyebrow" xml:space="preserve">
+    <value>Case</value>
+  </data>
+  <data name="Status_Running" xml:space="preserve">
+    <value>Running</value>
+  </data>
+  <data name="Status_Waiting" xml:space="preserve">
+    <value>Waiting for you</value>
+  </data>
+  <data name="Status_Completed" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+  <data name="Status_BudgetExceeded" xml:space="preserve">
+    <value>Stopped by budget</value>
+  </data>
+  <data name="Status_Failed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="Status_Cancelled" xml:space="preserve">
+    <value>Cancelled</value>
+  </data>
+  <data name="Stop" xml:space="preserve">
+    <value>Stop</value>
+  </data>
+  <data name="Empty_Title" xml:space="preserve">
+    <value>Pick a message. Four agents work the case; you approve anything that moves money.</value>
+  </data>
+  <data name="Empty_Body" xml:space="preserve">
+    <value>Every step lands on this graph as it happens: hand-offs, SQL tool calls, model calls with their cost, and your decisions.</value>
+  </data>
+  <data name="Graph_Label" xml:space="preserve">
+    <value>Run graph</value>
+  </data>
+  <data name="Lane_Classifier" xml:space="preserve">
+    <value>Triage</value>
+  </data>
+  <data name="Lane_DataAnalyst" xml:space="preserve">
+    <value>Data analyst</value>
+  </data>
+  <data name="Lane_Supervisor" xml:space="preserve">
+    <value>Supervisor</value>
+  </data>
+  <data name="Lane_Writer" xml:space="preserve">
+    <value>Writer</value>
+  </data>
+  <data name="Lane_Human" xml:space="preserve">
+    <value>You</value>
+  </data>
+  <data name="LaneCode_Classifier" xml:space="preserve">
+    <value>TR</value>
+  </data>
+  <data name="LaneCode_DataAnalyst" xml:space="preserve">
+    <value>DA</value>
+  </data>
+  <data name="LaneCode_Supervisor" xml:space="preserve">
+    <value>SV</value>
+  </data>
+  <data name="LaneCode_Writer" xml:space="preserve">
+    <value>WR</value>
+  </data>
+  <data name="LaneCode_Human" xml:space="preserve">
+    <value>YOU</value>
+  </data>
+  <data name="LaneRole_Classifier" xml:space="preserve">
+    <value>Reads intent, language and urgency; returns typed JSON.</value>
+  </data>
+  <data name="LaneRole_DataAnalyst" xml:space="preserve">
+    <value>Queries the store with read-only SQL tools.</value>
+  </data>
+  <data name="LaneRole_Supervisor" xml:space="preserve">
+    <value>Applies the refund, coupon and cancellation policy.</value>
+  </data>
+  <data name="LaneRole_Writer" xml:space="preserve">
+    <value>Drafts the reply in the customer&apos;s language.</value>
+  </data>
+  <data name="LaneRole_Human" xml:space="preserve">
+    <value>Approves or rejects anything that moves money.</value>
+  </data>
+  <data name="Route_to_data_analyst" xml:space="preserve">
+    <value>Needs store data</value>
+  </data>
+  <data name="Route_to_supervisor" xml:space="preserve">
+    <value>Decide what to do</value>
+  </data>
+  <data name="Route_to_writer" xml:space="preserve">
+    <value>Draft the reply</value>
+  </data>
+  <data name="Route_skip_data_analyst" xml:space="preserve">
+    <value>No store data needed</value>
+  </data>
+  <data name="Route_skip_decision" xml:space="preserve">
+    <value>Informational request: no action, no model call</value>
+  </data>
+  <data name="Activation_Working" xml:space="preserve">
+    <value>Working…</value>
+  </data>
+  <data name="Activation_Waiting" xml:space="preserve">
+    <value>Waiting for your decision</value>
+  </data>
+  <data name="Activation_Continues" xml:space="preserve">
+    <value>Resumes after your decision</value>
+  </data>
+  <data name="Model_Call" xml:space="preserve">
+    <value>model call</value>
+  </data>
+  <data name="Tool_Arguments" xml:space="preserve">
+    <value>Arguments</value>
+  </data>
+  <data name="Tool_Result" xml:space="preserve">
+    <value>Result</value>
+  </data>
+  <data name="Tool_Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
+  <data name="Tool_Pending" xml:space="preserve">
+    <value>running</value>
+  </data>
+  <data name="Reply_Drafted" xml:space="preserve">
+    <value>Reply drafted · {0} words</value>
+  </data>
+  <data name="Notice_Completed" xml:space="preserve">
+    <value>Done in {0} · {1} model calls · {2}</value>
+  </data>
+  <data name="Notice_Budget" xml:space="preserve">
+    <value>The budget guard stopped the run</value>
+  </data>
+  <data name="Notice_Failed" xml:space="preserve">
+    <value>The run failed</value>
+  </data>
+  <data name="Notice_FailedHint" xml:space="preserve">
+    <value>Check the AI provider settings (appsettings.json or user secrets).</value>
+  </data>
+  <data name="Approval_Eyebrow" xml:space="preserve">
+    <value>Your approval is needed</value>
+  </data>
+  <data name="Action_issue_refund" xml:space="preserve">
+    <value>Refund {0} for order #{1}</value>
+  </data>
+  <data name="Action_create_discount_coupon" xml:space="preserve">
+    <value>Give {1} a {0}% coupon</value>
+  </data>
+  <data name="Action_cancel_order" xml:space="preserve">
+    <value>Cancel order #{0}</value>
+  </data>
+  <data name="Action_escalate_to_human" xml:space="preserve">
+    <value>Escalate to a specialist ({0} priority)</value>
+  </data>
+  <data name="Action_unknown" xml:space="preserve">
+    <value>Run {0}</value>
+  </data>
+  <data name="Approval_Reason" xml:space="preserve">
+    <value>Reason</value>
+  </data>
+  <data name="Approval_Rationale" xml:space="preserve">
+    <value>Supervisor&apos;s reasoning</value>
+  </data>
+  <data name="Approval_Note" xml:space="preserve">
+    <value>Note for the record (optional)</value>
+  </data>
+  <data name="Approval_Approve" xml:space="preserve">
+    <value>Approve</value>
+  </data>
+  <data name="Approval_Reject" xml:space="preserve">
+    <value>Reject</value>
+  </data>
+  <data name="Approval_Approved" xml:space="preserve">
+    <value>Approved by {0}</value>
+  </data>
+  <data name="Approval_Rejected" xml:space="preserve">
+    <value>Rejected by {0}</value>
+  </data>
+  <data name="Approval_You" xml:space="preserve">
+    <value>you</value>
+  </data>
+  <data name="Approval_Waited" xml:space="preserve">
+    <value>after {0}</value>
+  </data>
+  <data name="Approval_Pending" xml:space="preserve">
+    <value>Waiting for the operator</value>
+  </data>
+  <data name="Triage_Title" xml:space="preserve">
+    <value>Triage</value>
+  </data>
+  <data name="Intent_OrderStatus" xml:space="preserve">
+    <value>Order status</value>
+  </data>
+  <data name="Intent_RefundRequest" xml:space="preserve">
+    <value>Refund request</value>
+  </data>
+  <data name="Intent_DamagedItem" xml:space="preserve">
+    <value>Damaged item</value>
+  </data>
+  <data name="Intent_MissingItem" xml:space="preserve">
+    <value>Missing item</value>
+  </data>
+  <data name="Intent_Cancellation" xml:space="preserve">
+    <value>Cancellation</value>
+  </data>
+  <data name="Intent_ProductQuestion" xml:space="preserve">
+    <value>Product question</value>
+  </data>
+  <data name="Intent_Complaint" xml:space="preserve">
+    <value>Complaint</value>
+  </data>
+  <data name="Intent_Other" xml:space="preserve">
+    <value>Other</value>
+  </data>
+  <data name="Urgency_Low" xml:space="preserve">
+    <value>Low urgency</value>
+  </data>
+  <data name="Urgency_Medium" xml:space="preserve">
+    <value>Medium urgency</value>
+  </data>
+  <data name="Urgency_High" xml:space="preserve">
+    <value>High urgency</value>
+  </data>
+  <data name="Sentiment_Positive" xml:space="preserve">
+    <value>Positive tone</value>
+  </data>
+  <data name="Sentiment_Neutral" xml:space="preserve">
+    <value>Neutral tone</value>
+  </data>
+  <data name="Sentiment_Negative" xml:space="preserve">
+    <value>Negative tone</value>
+  </data>
+  <data name="Language_es" xml:space="preserve">
+    <value>Spanish</value>
+  </data>
+  <data name="Language_en" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="Order_Ref" xml:space="preserve">
+    <value>Order #{0}</value>
+  </data>
+  <data name="Spend_Title" xml:space="preserve">
+    <value>Spend</value>
+  </data>
+  <data name="Spend_Total" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="Spend_Budget" xml:space="preserve">
+    <value>{0} of a {1} budget</value>
+  </data>
+  <data name="Spend_Pricing" xml:space="preserve">
+    <value>{0}: {1} in · {2} out per 1M tokens</value>
+  </data>
+  <data name="Spend_Unpriced" xml:space="preserve">
+    <value>{0}: no price configured</value>
+  </data>
+  <data name="Spend_Simulated" xml:space="preserve">
+    <value>Simulated usage: token counts are estimated and no API was called.</value>
+  </data>
+  <data name="Spend_Empty" xml:space="preserve">
+    <value>Costs show up here as the agents call the model.</value>
+  </data>
+  <data name="Actions_Title" xml:space="preserve">
+    <value>Actions</value>
+  </data>
+  <data name="Actions_Empty" xml:space="preserve">
+    <value>No business actions taken.</value>
+  </data>
+  <data name="ActionStatus_Executed" xml:space="preserve">
+    <value>Executed</value>
+  </data>
+  <data name="ActionStatus_Rejected" xml:space="preserve">
+    <value>Rejected</value>
+  </data>
+  <data name="ActionStatus_Failed" xml:space="preserve">
+    <value>Blocked by business rules</value>
+  </data>
+  <data name="Reply_Title" xml:space="preserve">
+    <value>Draft reply</value>
+  </data>
+  <data name="Reply_To" xml:space="preserve">
+    <value>To</value>
+  </data>
+  <data name="Reply_Review" xml:space="preserve">
+    <value>Review before sending.</value>
+  </data>
+  <data name="Copy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="Copied" xml:space="preserve">
+    <value>Copied</value>
+  </data>
+  <data name="Facts_Title" xml:space="preserve">
+    <value>Facts from the store</value>
+  </data>
+  <data name="Decision_Title" xml:space="preserve">
+    <value>Supervisor&apos;s decision</value>
+  </data>
+  <data name="History_Title" xml:space="preserve">
+    <value>Run history</value>
+  </data>
+  <data name="History_Subtitle" xml:space="preserve">
+    <value>Every run is logged step by step, with tokens and cost.</value>
+  </data>
+  <data name="History_Empty" xml:space="preserve">
+    <value>No runs yet. Run the agents from the console and they&apos;ll be logged here.</value>
+  </data>
+  <data name="Col_When" xml:space="preserve">
+    <value>When</value>
+  </data>
+  <data name="Col_Customer" xml:space="preserve">
+    <value>Customer</value>
+  </data>
+  <data name="Col_Intent" xml:space="preserve">
+    <value>Intent</value>
+  </data>
+  <data name="Col_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Col_Approvals" xml:space="preserve">
+    <value>Approvals</value>
+  </data>
+  <data name="Col_Tokens" xml:space="preserve">
+    <value>Tokens</value>
+  </data>
+  <data name="Col_Cost" xml:space="preserve">
+    <value>Cost</value>
+  </data>
+  <data name="Col_Duration" xml:space="preserve">
+    <value>Duration</value>
+  </data>
+  <data name="History_Back" xml:space="preserve">
+    <value>Back to history</value>
+  </data>
+  <data name="History_NotFound" xml:space="preserve">
+    <value>That run isn&apos;t in the log.</value>
+  </data>
+  <data name="Details_Title" xml:space="preserve">
+    <value>Run {0}</value>
+  </data>
+  <data name="Spend_Line" xml:space="preserve">
+    <value>calls {0} · tokens {1} → {2}</value>
+  </data>
+  <data name="Notice_BudgetDetail" xml:space="preserve">
+    <value>Spent {0} of a {1} budget. No further model calls were made.</value>
+  </data>
+</root>

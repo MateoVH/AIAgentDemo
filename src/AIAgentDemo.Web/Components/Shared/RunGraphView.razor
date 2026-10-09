@@ -1,0 +1,273 @@
+@inject IStringLocalizer<SharedResource> L
+
+@* The run as a graph: five lifelines (four agents + the human), hand-offs between them,
+   tool and model calls inside each activation, and the approval gate on the human's lane. *@
+<section class="graph" aria-label="@L["Graph_Label"]">
+    <div class="g-row g-head" aria-hidden="true">
+        <div class="rail">
+            @foreach (var lane in Lanes)
+            {
+                <span class="lane-code lane-@((int)lane)" style="--i:@((int)lane)" title="@L[$"Lane_{lane}"]">@L[$"LaneCode_{lane}"]</span>
+            }
+        </div>
+        <div></div>
+    </div>
+
+    @if (Rows.Count == 0)
+    {
+        @foreach (var lane in Lanes)
+        {
+            <div class="g-row g-cast">
+                <div class="rail" aria-hidden="true">
+                    @for (var i = 0; i < Lanes.Length; i++)
+                    {
+                        <span class="life lane-@i @(i == (int)lane ? "on" : null)" style="--i:@i"></span>
+                    }
+                    <span class="node lane-@((int)lane)" style="--i:@((int)lane)"></span>
+                </div>
+                <div class="g-body">
+                    <p class="cast-name lane-@((int)lane)">@L[$"Lane_{lane}"]</p>
+                    <p class="cast-role">@L[$"LaneRole_{lane}"]</p>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <ol class="g-rows">
+            @foreach (var row in Rows)
+            {
+                <li class="g-row @RowCss(row)" @key="row.Key">
+                    <div class="rail" aria-hidden="true">
+                        @for (var i = 0; i < Lanes.Length; i++)
+                        {
+                            <span class="life lane-@i @(row.ActiveLanes.Contains((Lane)i) ? "on" : null)" style="--i:@i"></span>
+                        }
+                        @switch (row)
+                        {
+                            case ActivationRow activation:
+                                <span class="node lane-@((int)activation.Lane) @NodeCss(activation)" style="--i:@((int)activation.Lane)"></span>
+                                break;
+                            case HandoffRow handoff:
+                                <span class="wire lane-@((int)handoff.To) @(handoff.To > handoff.From ? "to-right" : "to-left")"
+                                      style="--a:@Math.Min((int)handoff.From, (int)handoff.To); --span:@Math.Abs((int)handoff.To - (int)handoff.From)"></span>
+                                break;
+                            case SkipRow skip:
+                                <span class="node is-skip lane-@((int)skip.Lane)" style="--i:@((int)skip.Lane)"></span>
+                                break;
+                            case ApprovalRow approval:
+                                <span class="wire @ApprovalWireCss(approval)" style="--a:@((int)Lane.Supervisor); --span:2"></span>
+                                <span class="node lane-@((int)Lane.Human) @(approval.Decision is null && Live ? "pulse" : null)" style="--i:@((int)Lane.Human)"></span>
+                                break;
+                        }
+                    </div>
+
+                    <div class="g-body">
+                        @switch (row)
+                        {
+                            case ActivationRow activation:
+                                <article class="act lane-@((int)activation.Lane)">
+                                    <header class="act-head">
+                                        <span class="act-name">@L[$"Lane_{activation.Lane}"]</span>
+                                        @if (activation.IsContinuation)
+                                        {
+                                            <span class="act-tag">@L["Activation_Continues"]</span>
+                                        }
+                                        <span class="act-meta">
+                                            @switch (activation.State)
+                                            {
+                                                case ActivationState.Working:
+                                                    <span class="working">@L["Activation_Working"]</span>
+                                                    break;
+                                                case ActivationState.WaitingForHuman:
+                                                    <span class="waiting">@L["Activation_Waiting"]</span>
+                                                    break;
+                                                default:
+                                                    <span class="mono">@string.Join(" · ", new[] { Format.Duration(activation.DurationMs), Money.Cost(activation.CostUsd) }.Where(part => part.Length > 0))</span>
+                                                    break;
+                                            }
+                                        </span>
+                                    </header>
+
+                                    @if (activation.Steps.Count > 0)
+                                    {
+                                        <ol class="steps">
+                                            @foreach (var step in activation.Steps)
+                                            {
+                                                if (step is ModelCall call)
+                                                {
+                                                    <li class="step-model mono">
+                                                        <span class="step-kind">@L["Model_Call"]</span>
+                                                        <span>@call.Model</span>
+                                                        <span>@Format.Number(call.InputTokens) → @Format.Number(call.OutputTokens) tok</span>
+                                                        <span>@Money.Cost(call.CostUsd)</span>
+                                                        <span>@Format.Duration(call.DurationMs)</span>
+                                                    </li>
+                                                }
+                                                else if (step is ToolInteraction tool)
+                                                {
+                                                    var open = expanded.Contains(tool.Key);
+                                                    <li class="step-tool">
+                                                        <button type="button" class="tool" aria-expanded="@(open ? "true" : "false")" @onclick="() => Toggle(tool.Key)">
+                                                            <span class="tool-name">@tool.Name</span>
+                                                            <span class="tool-args">@ArgumentSummary(tool.Arguments)</span>
+                                                            <span class="tool-status @ToolCss(tool)">@(tool.Pending ? L["Tool_Pending"] : Format.Duration(tool.DurationMs))</span>
+                                                        </button>
+                                                        @if (open)
+                                                        {
+                                                            <div class="tool-detail">
+                                                                <p class="label">@L["Tool_Arguments"]</p>
+                                                                <pre>@AgentJson.Pretty(tool.Arguments)</pre>
+                                                                <p class="label">@(tool.Error is null ? L["Tool_Result"] : L["Tool_Error"])</p>
+                                                                <pre>@AgentJson.Pretty(tool.Result ?? tool.Error)</pre>
+                                                            </div>
+                                                        }
+                                                    </li>
+                                                }
+                                            }
+                                        </ol>
+                                    }
+
+                                    @if (activation.Output is { Length: > 0 } output)
+                                    {
+                                        <div class="act-output">
+                                            @switch (activation.Lane)
+                                            {
+                                                case Lane.Classifier when StructuredOutput.TryParse<TriageResult>(output) is { } triage:
+                                                    <ul class="chips">
+                                                        <li class="chip chip-strong">@L[$"Intent_{triage.Intent}"]</li>
+                                                        <li class="chip">@L[$"Language_{triage.Language}"]</li>
+                                                        <li class="chip urgency-@triage.Urgency.ToString().ToLowerInvariant()">@L[$"Urgency_{triage.Urgency}"]</li>
+                                                        @if (triage.OrderId is int orderId)
+                                                        {
+                                                            <li class="chip mono">@L["Order_Ref", orderId]</li>
+                                                        }
+                                                    </ul>
+                                                    break;
+                                                case Lane.DataAnalyst:
+                                                    <ul class="facts">
+                                                        @foreach (var line in Lines(output))
+                                                        {
+                                                            <li>@line</li>
+                                                        }
+                                                    </ul>
+                                                    break;
+                                                case Lane.Writer:
+                                                    <p class="act-note">@L["Reply_Drafted", Format.Words(output)]</p>
+                                                    break;
+                                                default:
+                                                    <p>@output</p>
+                                                    break;
+                                            }
+                                        </div>
+                                    }
+                                </article>
+                                break;
+
+                            case HandoffRow handoff:
+                                <p class="handoff lane-@((int)handoff.To)">
+                                    <strong>@L[$"Lane_{handoff.To}"]</strong>
+                                    <span>@L[$"Route_{handoff.Route}"]</span>
+                                </p>
+                                break;
+
+                            case SkipRow skip:
+                                <p class="skip">@L[$"Route_{skip.Route}"]</p>
+                                break;
+
+                            case ApprovalRow approval:
+                                <ApprovalCard Row="approval" Live="Live" OnDecision="OnDecision" />
+                                break;
+
+                            case NoticeRow { Kind: NoticeKind.Completed } notice:
+                                <p class="notice notice-done mono">
+                                    @L["Notice_Completed", Format.Duration(notice.Source?.DurationMs), notice.Source is null ? 0 : CallCount(), Money.Cost(notice.Source?.CostUsd ?? 0)]
+                                </p>
+                                break;
+
+                            case NoticeRow { Kind: NoticeKind.BudgetExceeded } notice:
+                                <div class="notice notice-alert" role="alert" title="@notice.Detail">
+                                    <strong>@L["Notice_Budget"]</strong>
+                                    <span>@L["Notice_BudgetDetail", Money.Cost(notice.Source?.CostUsd ?? 0), Money.Budget(notice.BudgetUsd)]</span>
+                                </div>
+                                break;
+
+                            case NoticeRow notice:
+                                <div class="notice notice-alert" role="alert">
+                                    <strong>@L["Notice_Failed"]</strong>
+                                    <span>@notice.Detail</span>
+                                    <span class="hint">@L["Notice_FailedHint"]</span>
+                                </div>
+                                break;
+                        }
+                    </div>
+                </li>
+            }
+        </ol>
+    }
+</section>
+
+@code {
+    private static readonly Lane[] Lanes = Enum.GetValues<Lane>();
+
+    [Parameter, EditorRequired] public IReadOnlyList<GraphRow> Rows { get; set; } = [];
+    [Parameter] public bool Live { get; set; }
+    [Parameter] public Func<string, bool, string?, Task>? OnDecision { get; set; }
+
+    private readonly HashSet<string> expanded = [];
+
+    private void Toggle(string key)
+    {
+        if (!expanded.Remove(key))
+        {
+            expanded.Add(key);
+        }
+    }
+
+    private int CallCount() => Rows.OfType<ActivationRow>().Sum(a => a.Steps.OfType<ModelCall>().Count());
+
+    private static string RowCss(GraphRow row) => row switch
+    {
+        ActivationRow => "is-activation",
+        HandoffRow => "is-handoff",
+        SkipRow => "is-skip",
+        ApprovalRow => "is-approval",
+        _ => "is-notice",
+    };
+
+    private string? NodeCss(ActivationRow activation) => activation.State switch
+    {
+        ActivationState.Working => Live ? "pulse" : null,
+        ActivationState.WaitingForHuman => "is-hollow",
+        _ => null,
+    };
+
+    private static string ApprovalWireCss(ApprovalRow approval) => approval.Decision switch
+    {
+        null => "lane-4 to-right",
+        { Approved: true } => "is-ok to-left",
+        _ => "is-bad to-left",
+    };
+
+    private static string ToolCss(ToolInteraction tool) =>
+        tool.Error is not null ? "is-error" : tool.Pending ? "is-pending" : "is-ok";
+
+    private static IEnumerable<string> Lines(string text) =>
+        text.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(line => line.TrimStart('-', '*', '•', ' '));
+
+    /// <summary>"orderId 1001 · email lucia…" — enough to read the call without expanding it.</summary>
+    private static string ArgumentSummary(string? json)
+    {
+        if (RunInsights.TryParse(json) is not { ValueKind: JsonValueKind.Object } arguments)
+        {
+            return "";
+        }
+
+        return string.Join(" · ", arguments.EnumerateObject().Select(p =>
+        {
+            var value = p.Value.ValueKind == JsonValueKind.String ? p.Value.GetString() ?? "" : p.Value.GetRawText();
+            return $"{p.Name} {(value.Length > 40 ? value[..40] + "…" : value)}";
+        }));
+    }
+}

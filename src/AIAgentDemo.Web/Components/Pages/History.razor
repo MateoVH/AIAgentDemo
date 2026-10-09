@@ -1,0 +1,63 @@
+@page "/runs"
+@inject IRunStore Runs
+@inject IStringLocalizer<SharedResource> L
+
+<PageTitle>@L["Title_History"]</PageTitle>
+
+<div class="page">
+    <header class="page-head">
+        <h1 class="page-title">@L["History_Title"]</h1>
+        <p class="hint">@L["History_Subtitle"]</p>
+    </header>
+
+    @if (runs is null)
+    {
+    }
+    else if (runs.Count == 0)
+    {
+        <div class="empty">
+            <p>@L["History_Empty"]</p>
+            <a class="btn btn-primary" href="">@L["Nav_Console"]</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table class="runs">
+                <thead>
+                    <tr>
+                        <th scope="col">@L["Col_When"]</th>
+                        <th scope="col">@L["Col_Customer"]</th>
+                        <th scope="col">@L["Col_Intent"]</th>
+                        <th scope="col">@L["Col_Status"]</th>
+                        <th scope="col" class="num">@L["Col_Approvals"]</th>
+                        <th scope="col" class="num">@L["Col_Tokens"]</th>
+                        <th scope="col" class="num">@L["Col_Cost"]</th>
+                        <th scope="col" class="num">@L["Col_Duration"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var run in runs)
+                    {
+                        <tr>
+                            <td><a href="runs/@run.RunId">@run.StartedAt.ToLocalTime().ToString("g", CultureInfo.CurrentCulture)</a></td>
+                            <td>@run.CustomerEmail</td>
+                            <td>@(run.Intent is { } intent ? L[$"Intent_{intent}"] : "—")</td>
+                            <td><span class="status status-@run.Status.ToString().ToLowerInvariant()">@L[$"Status_{run.Status}"]</span></td>
+                            <td class="num">@run.Approvals</td>
+                            <td class="num">@Format.Number(run.InputTokens + run.OutputTokens)</td>
+                            <td class="num">@Money.Cost(run.CostUsd)</td>
+                            <td class="num">@Format.Duration(run.DurationMs)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    private IReadOnlyList<RunSummary>? runs;
+
+    protected override async Task OnInitializedAsync() => runs = await Runs.ListAsync(100);
+}
